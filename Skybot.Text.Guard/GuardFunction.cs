@@ -44,7 +44,7 @@ namespace Skybot.Text.Guard
                     {"grant_type", "client_credentials" }
                 });
 
-                var response = await client.PostAsync(Settings.AuthorityUri, content);
+                var response = await client.PostAsync($"{Settings.AuthorityUri}/connect/token", content);
                 var responseContent = await response.Content.ReadAsStringAsync();
 
                 var deserialziedContent = JsonConvert.DeserializeObject<dynamic>(responseContent);
@@ -58,15 +58,15 @@ namespace Skybot.Text.Guard
             var token = await GetToken();
             using (var client = new HttpClient())
             {
-                var content = new StringContent(JsonConvert.SerializeObject(new
+                var content = new
                 {
                     FromNumber = smsRequest.From,
                     ToNumber = smsRequest.To,
                     Message = smsRequest.Body
-                }), System.Text.Encoding.UTF8, "application/json");
+                };
 
                 client.DefaultRequestHeaders.Add("Authorization", $"Bearer {token}");
-                await client.PostAsync(Settings.TextoServiceUri, content);
+                await client.PostAsJsonAsync($"{Settings.TextoServiceUri}/api/text/send", content);
             }
         }
     }
