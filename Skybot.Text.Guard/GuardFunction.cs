@@ -27,7 +27,12 @@ namespace Skybot.Text.Guard
 
             if (smsRequest != null)
             {
-                await PostSmsRequest(smsRequest);
+                var response = await PostSmsRequest(smsRequest);
+
+                if (response.StatusCode == System.Net.HttpStatusCode.OK)
+                {
+                    return new OkResult();
+                }
             }
 
             return new BadRequestResult();
@@ -49,11 +54,11 @@ namespace Skybot.Text.Guard
 
                 var deserialziedContent = JsonConvert.DeserializeObject<dynamic>(responseContent);
 
-                return deserialziedContent.access_token;
+                return deserialziedContent?.access_token;
             }
         }
 
-        private static async Task PostSmsRequest(SmsRequest smsRequest)
+        private static async Task<HttpResponseMessage> PostSmsRequest(SmsRequest smsRequest)
         {
             var token = await GetToken();
             using (var client = new HttpClient())
@@ -66,7 +71,9 @@ namespace Skybot.Text.Guard
                 };
 
                 client.DefaultRequestHeaders.Add("Authorization", $"Bearer {token}");
-                await client.PostAsJsonAsync($"{Settings.TextoServiceUri}/api/text/send", content);
+                var response = await client.PostAsJsonAsync($"{Settings.TextoServiceUri}/api/text/receive", content);
+
+                return response;
             }
         }
     }

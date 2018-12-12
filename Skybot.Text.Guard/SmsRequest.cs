@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-
-namespace Skybot.Text.Guard
+﻿namespace Skybot.Text.Guard
 {
     public class SmsRequest
     {
