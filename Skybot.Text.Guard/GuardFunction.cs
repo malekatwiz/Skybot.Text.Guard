@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.Azure.WebJobs;
 using Microsoft.Azure.WebJobs.Extensions.Http;
 using Newtonsoft.Json;
+using Twilio.AspNet.Core;
 
 namespace Skybot.Text.Guard
 {
@@ -31,7 +32,7 @@ namespace Skybot.Text.Guard
 
                 if (response.StatusCode == System.Net.HttpStatusCode.OK)
                 {
-                    return new OkResult();
+                    return new TwiMLResult();
                 }
             }
 
