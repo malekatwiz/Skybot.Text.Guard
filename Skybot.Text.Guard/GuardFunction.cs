@@ -2,7 +2,6 @@
 using System.IO;
 using System.Net.Http;
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Azure.WebJobs;
 using Microsoft.Azure.WebJobs.Extensions.Http;
@@ -15,10 +14,9 @@ namespace Skybot.Text.Guard
     {
         [FunctionName("SkybotTextGuard")]
         public static async Task<IActionResult> Run([HttpTrigger(AuthorizationLevel.Anonymous, "post", Route = null)]
-            HttpRequest request)
+            Twilio.AspNet.Common.SmsRequest request, string key)
         {
-            string secretKey = request.Query["key"];
-            if (string.IsNullOrEmpty(secretKey) || !secretKey.Equals(Settings.SecretKey))
+            if (string.IsNullOrEmpty(key) || !key.Equals(Settings.SecretKey))
             {
                 return new UnauthorizedResult();
             }
