@@ -1,7 +1,7 @@
 ﻿using System.Collections.Generic;
-using System.IO;
 using System.Net.Http;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Azure.WebJobs;
 using Microsoft.Azure.WebJobs.Extensions.Http;
@@ -14,23 +14,31 @@ namespace Skybot.Text.Guard
     {
         [FunctionName("SkybotTextGuard")]
         public static async Task<IActionResult> Run([HttpTrigger(AuthorizationLevel.Anonymous, "post", Route = null)]
-            Twilio.AspNet.Common.SmsRequest request, string key)
+            HttpRequest request)
         {
-            if (string.IsNullOrEmpty(key) || !key.Equals(Settings.SecretKey))
+            var key = request.Query["key"];
+            if (key.Count == 0 && string.IsNullOrEmpty(key[0]) && !key[0].Equals(Settings.SecretKey))
             {
                 return new UnauthorizedResult();
             }
-
-            var requestBody = new StreamReader(request.Body).ReadToEnd();
-            var smsRequest = JsonConvert.DeserializeObject<SmsRequest>(requestBody);
-
-            if (smsRequest != null)
+            
+            if (request.Form.TryGetValue("From", out var from) &&
+                request.Form.TryGetValue("To", out var to) &&
+                request.Form.TryGetValue("Body", out var body))
             {
-                var response = await PostSmsRequest(smsRequest);
-
-                if (response.StatusCode == System.Net.HttpStatusCode.OK)
+                if (from.Count > 0 && to.Count > 0 && body.Count > 0)
                 {
-                    return new TwiMLResult();
+                    var response = await PostSmsRequest(new SmsRequest
+                    {
+                        From = from[0],
+                        To = to[0],
+                        Body = body[0]
+                    });
+
+                    if (response.StatusCode == System.Net.HttpStatusCode.OK)
+                    {
+                        return new TwiMLResult();
+                    }
                 }
             }
 
